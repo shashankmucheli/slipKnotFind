@@ -37,11 +37,12 @@ public class SlipknotFind {
    
    static final double TOLERANCE=0.0003;
    int i = 0;
+   int count = 1;
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
    static final String PATH="";     //the path of your pdb file.     e.g. PATH="PDB/";
-   static final String PDB="1E2I.pdb";
+   static final String PDB="1ALK.pdb";
    
    
    public static void main(String[] args) {
@@ -183,7 +184,7 @@ public class SlipknotFind {
 
          if(_knotInR == true && _knotInRes == false){
             System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1+"\n Now, Lets check again from if there are multiple slipknots\n");
-            i = 1+k1;
+            i = k1+1;
             checkagain();
          }
          else{
@@ -191,12 +192,13 @@ public class SlipknotFind {
          }
       }
       else{
-         System.out.println("not knots, no slipknots");
+         System.out.println("not knots, no slipknots" + "\n There are " + count + " knots");
       }
    }
    
    void checkagain(){
-       while(i<res.size()){
+       if(i<res.size()-2){
+           count++;
            slipknotFind(res);
        }
    }
