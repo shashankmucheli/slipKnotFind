@@ -36,13 +36,13 @@ public class SlipknotFind {
    
    
    static final double TOLERANCE=0.0003;
-   int i = 0;
    int count = 1;
+   int i = 0;
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
    static final String PATH="";     //the path of your pdb file.     e.g. PATH="PDB/";
-   static final String PDB="1ALK.pdb";
+   static final String PDB="1ALK_A.pdb";
    
    
    public static void main(String[] args) {
@@ -108,10 +108,10 @@ public class SlipknotFind {
       boolean _knotInRes=true;
       int k3=0;
       int k2=0;
-      System.out.println("This is the first line");
+      //System.out.println("This is the first line");
       //init r
       while(i<res.size()-2){
-      //for(int i=i;i<res.size()-2;i++){
+      //for(int i= i ;i<res.size()-2;i++){
          if(_knotInR) break;
          for(int j=i+2;j<res.size();j++){
             if(_knotInR) break;
@@ -183,7 +183,7 @@ public class SlipknotFind {
          }
 
          if(_knotInR == true && _knotInRes == false){
-            System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1+"\n Now, Lets check again from if there are multiple slipknots\n");
+            System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1+"\nNow, Lets check again from if there are multiple slipknots\n");
             i = k1+1;
             checkagain();
          }
@@ -192,7 +192,7 @@ public class SlipknotFind {
          }
       }
       else{
-         System.out.println("not knots, no slipknots" + "\n There are " + count + " knots");
+         System.out.println("not knots, no slipknots" + "\nThere are " + count + " knots");
       }
    }
    
