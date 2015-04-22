@@ -42,7 +42,7 @@ public class SlipknotFind {
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
    static final String PATH="";     //the path of your pdb file.     e.g. PATH="PDB/";
-   static final String PDB="1ALK_A.pdb";
+   static final String PDB="1XD3.pdb";
    
    
    public static void main(String[] args) {
@@ -62,12 +62,15 @@ public class SlipknotFind {
             String[] s=temp.split("\\s+");
             if(s[0].equals("ATOM"))
                if(s[2].equals("CA")){
-                  Res r=new Res();
-                  r.index=Integer.parseInt(s[5]);
-                  r.x=Double.parseDouble(s[6]);
-                  r.y=Double.parseDouble(s[7]);
-                  r.z=Double.parseDouble(s[8]);
-                  res.add(r);
+                   if(s[4].equals("A")){
+                       if(i == 0) { i = Integer.parseInt(s[5]); }
+                    Res r=new Res();
+                    r.index=Integer.parseInt(s[5]);
+                    r.x=Double.parseDouble(s[6]);
+                    r.y=Double.parseDouble(s[7]);
+                    r.z=Double.parseDouble(s[8]);
+                    res.add(r);
+                 }
                }
          }
       }catch(IOException e){
@@ -108,8 +111,6 @@ public class SlipknotFind {
       boolean _knotInRes=true;
       int k3=0;
       int k2=0;
-      //System.out.println("This is the first line");
-      //init r
       while(i<res.size()-2){
       //for(int i= i ;i<res.size()-2;i++){
          if(_knotInR) break;
