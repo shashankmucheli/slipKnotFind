@@ -18,7 +18,6 @@
  *    See the differences between "1ALK.pdb" and "1ALK_A.pdb" inside the project.
  *    For more information about PDB file. http://en.wikipedia.org/wiki/Protein_Data_Bank_(file_format)
  * 
- * For more questions: yzhang5@umassd.edu 
  ***********************************************************************************************************************/
 
 
@@ -36,13 +35,13 @@ public class SlipknotFind {
    
    
    static final double TOLERANCE=0.0003;
-   int count = 1;
+   int count = 0;
    int i = 0;
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
    static final String PATH="";     //the path of your pdb file.     e.g. PATH="PDB/";
-   static final String PDB="1XD3.pdb";
+   static final String PDB="1E2I.pdb";
    
    
    public static void main(String[] args) {
@@ -60,7 +59,7 @@ public class SlipknotFind {
          String temp;
          while((temp=reader.readLine())!= null){
             String[] s=temp.split("\\s+");
-            if(s[0].equals("ATOM"))
+            if(s[0].equals("ATOM")){
                if(s[2].equals("CA")){
                    if(s[4].equals("A")){
                        if(i == 0) { i = Integer.parseInt(s[5]); }
@@ -72,6 +71,8 @@ public class SlipknotFind {
                     res.add(r);
                  }
                }
+         }
+      
          }
       }catch(IOException e){
          e.printStackTrace();
@@ -113,9 +114,9 @@ public class SlipknotFind {
       int k2=0;
       while(i<res.size()-2){
       //for(int i= i ;i<res.size()-2;i++){
-         if(_knotInR) break;
+         //if(_knotInR) break;
          for(int j=i+2;j<res.size();j++){
-            if(_knotInR) break;
+            //if(_knotInR) break;
             System.out.println("checking residues from " + i + " to "+ j +"  ");
             r=new ArrayList();
             for(int p=0;p<j+1;p++){
@@ -129,7 +130,7 @@ public class SlipknotFind {
                k2=j;
                System.out.println("find a knot between "+ k3 + " and "+k2);
             }
-         }i++;
+         }if(_knotInR) break;i++;
       }
       
       for(int i=k3+1;i<=k2;i++){
@@ -186,7 +187,10 @@ public class SlipknotFind {
          if(_knotInR == true && _knotInRes == false){
             System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1+"\nNow, Lets check again from if there are multiple slipknots\n");
             i = k1+1;
-            checkagain();
+            if( i <= res.size()-2){
+                count += 1;
+                checkagain();
+            }
          }
          else{
             System.out.println("this chain only has a knot between "+ k3+ " and "+k2);
@@ -198,10 +202,7 @@ public class SlipknotFind {
    }
    
    void checkagain(){
-       if(i<res.size()-2){
-           count++;
            slipknotFind(res);
-       }
    }
    
    void simplify(List<Res> res){
