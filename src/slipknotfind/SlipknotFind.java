@@ -1,4 +1,10 @@
 /*********************************************************************************************************************
+ * Name: Shashank Mucheli Sukumar
+ * ID: 01442857
+ * Instructor: Dr. Firas Khatib.
+ * Computer and Information Science Department.
+ * University Of Massachusetts Dartmouth.
+ * 
  * FAQ
  * Q: What program is needed to run the code?
  * A: The project was built in NetBeans IDE. Download latest version of NetBeans form https://netbeans.org/downloads/
@@ -27,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +48,7 @@ public class SlipknotFind {
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
    static final String PATH="";     //the path of your pdb file.     e.g. PATH="PDB/";
-   static final String PDB="1E2I.pdb";
+   static final String PDB="1Z97.pdb";
    
    
    public static void main(String[] args) {
@@ -71,7 +78,7 @@ public class SlipknotFind {
                     res.add(r);
                  }
                }
-         }
+        }
       
          }
       }catch(IOException e){
@@ -112,6 +119,8 @@ public class SlipknotFind {
       boolean _knotInRes=true;
       int k3=0;
       int k2=0;
+      int k_2=0;
+      int k_3=0;
       while(i<res.size()-2){
       //for(int i= i ;i<res.size()-2;i++){
          //if(_knotInR) break;
@@ -129,6 +138,10 @@ public class SlipknotFind {
                k3=i;
                k2=j;
                System.out.println("find a knot between "+ k3 + " and "+k2);
+               
+               if (k_3 == 0 && k_2 == 0){
+                    k_3 = k3; k_2 = k2;
+               }
             }
          }if(_knotInR) break;i++;
       }
@@ -143,7 +156,7 @@ public class SlipknotFind {
          System.out.println("checking residues from " + i + " to "+ k2 +"  ");
          if(!knotFind(r)){
             k3=i-1;
-            System.out.println("find smallest knot between "+k3 +" to "+ k2);
+            System.out.println("find smaller knot between "+k3 +" to "+ k2);
             break;
          }
       }
@@ -186,6 +199,8 @@ public class SlipknotFind {
 
          if(_knotInR == true && _knotInRes == false){
             System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1+"\nNow, Lets check again from if there are multiple slipknots\n");
+            System.out.println(k_3+" , "+k_2+" , "+k1);
+            writeToFile(k_3,k_2,k1);
             i = k1+1;
             if( i <= res.size()-2){
                 count += 1;
@@ -194,6 +209,7 @@ public class SlipknotFind {
          }
          else{
             System.out.println("this chain only has a knot between "+ k3+ " and "+k2);
+            writeToFile(k3,0,k2);
          }
       }
       else{
@@ -460,6 +476,34 @@ public class SlipknotFind {
       initTriangle(res);
       simplify(res);       
       _byArea=false;
+   }
+   
+   void writeToFile( int k3, int k2, int k1 ){
+      String fileName=PATH+PDB;
+      File file=new File(fileName);
+      BufferedReader reader=null;
+      System.out.println("k1 value : " + k1);
+      System.out.println("k3 value : " + k3);
+      try{
+         String trim_filename = PATH+"trim_"+PDB;
+         PrintWriter writer = new PrintWriter(trim_filename, "UTF-8"); 
+         reader=new BufferedReader(new FileReader(file));
+         String temp;
+         while((temp=reader.readLine())!= null){
+            String[] s=temp.split("\\s+");
+             if(s[0].equals("ATOM")){
+                int residue = Integer.parseInt(s[5]);
+                if(residue >= k3 && residue <= k1){
+                    System.out.print(residue+"\n");
+                    writer.println(temp);
+                }
+            }
+        }
+        writer.close();
+        System.out.println("Done Creating file at :" + PATH+PDB);
+        System.exit(0);
+      }catch(IOException e){
+      }
    }
 
 }
