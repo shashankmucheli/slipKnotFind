@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.*;
 
 
 public class SlipknotFind {
@@ -43,7 +44,7 @@ public class SlipknotFind {
    
    static final double TOLERANCE=0.0003;
    int count = 0;
-   int i = 0;
+   int first_atom = 0 , i = 0;
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
@@ -70,6 +71,7 @@ public class SlipknotFind {
                if(s[2].equals("CA")){
                    if(s[4].equals("A")){
                        if(i == 0) { i = Integer.parseInt(s[5]); }
+                       if(first_atom == 0) { first_atom = Integer.parseInt(s[5]); }
                     Res r=new Res();
                     r.index=Integer.parseInt(s[5]);
                     r.x=Double.parseDouble(s[6]);
@@ -85,6 +87,7 @@ public class SlipknotFind {
          e.printStackTrace();
       }
       System.out.println("residual.size=" + res.size());
+      System.out.println("first atom :" + first_atom);
 //      System.out.println("*****"+res.size()+" CA information**********");
 //      for(int i=0;i<res.size();i++){
 //         System.out.println(res.get(i).index+":\t"+res.get(i).x+"\t"+res.get(i).y+"\t"+res.get(i).z);
@@ -200,16 +203,16 @@ public class SlipknotFind {
          if(_knotInR == true && _knotInRes == false){
             System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1+"\nNow, Lets check again from if there are multiple slipknots\n");
             System.out.println(k_3+" , "+k_2+" , "+k1);
-            writeToFile(k_3,k_2,k1);
+            //writeToFile(k_3,k_2,k1);
             i = k1+1;
             if( i <= res.size()-2){
                 count += 1;
-                checkagain();
+                //checkagain();
             }
          }
          else{
             System.out.println("this chain only has a knot between "+ k3+ " and "+k2);
-            writeToFile(k3,0,k2);
+            //writeToFile(k3,0,k2);
          }
       }
       else{
@@ -223,24 +226,34 @@ public class SlipknotFind {
    
    void simplify(List<Res> res){
       int numInTri=0;
+      int i = first_atom;
+      int j = 0;
+      ArrayList coordinates = new ArrayList();
+      Return_simplify Re=new Return_simplify();
       while(res.size()>2){
          if(numInTri>=tri.size()){
             //cannot simplify any more
+            //PDBfile_with_knotted_coordinates();
             return;
          }
 
          int res1 = tri.get(numInTri).res1;
          Plane plane = new Plane(res,res1);
-         if (!findIntersect(plane,res)) {
+         Re = findIntersect(plane,res);
+         if (!Re.bool) {
             deleteResidual(res, res1 + 1);
             numInTri = 0;
          } else {
             numInTri++;
-         }
+            coordinates.add(i);
+            //System.out.println(Arrays.toString(coordinates.toArray()));
+            System.out.println("Unsimplified Atoms: " + Re.value);
+         } i++;
       }
    }
    
-   boolean findIntersect(Plane plane, List<Res> res){
+   Return_simplify findIntersect(Plane plane, List<Res> res){
+     Return_simplify Re=new Return_simplify();
       List<Integer> trouble=new ArrayList();
       
       int point1=0;
@@ -265,6 +278,7 @@ public class SlipknotFind {
       }
       
       boolean _intersect=false;
+      Re.bool = false;
       //check if the trouble segments are really intersect the plane
       for(int i=0;i<trouble.size();i++){
          int p1=trouble.get(i);
@@ -279,10 +293,14 @@ public class SlipknotFind {
             System.out.println("****the segment is inside the plane now****"+ Math.abs(denom));
             //
             if(segmentIntersectTriangle(plane,p1,res)){
-               return true;
+               Re.bool=true;
+               Re.value=res.get(p1).index;
+               return Re;
             }
             if(segmentIntersectTriangle(plane,p2,res)){
-               return true;
+               Re.bool=true;
+               Re.value=res.get(p2).index;
+               return Re;
             }
          }
          else{                                  //the segment crosses the plane
@@ -299,15 +317,19 @@ public class SlipknotFind {
             crossPoint.x=res.get(p1).x +(mu * (res.get(p2).x - res.get(p1).x));
             crossPoint.y=res.get(p1).y +(mu * (res.get(p2).y - res.get(p1).y));
             crossPoint.z=res.get(p1).z +(mu * (res.get(p2).z - res.get(p1).z));
+            crossPoint.index = res.get(p1).index;
             //check if the cross point is inside the triangle
             if(crossPointInsideTriangle(plane,crossPoint,res)){
                //System.out.println("cross point: \t"+crossPoint.x+"\t"+crossPoint.y+"\t"+crossPoint.z);
-               return _intersect=true;
+              
+              Re.bool=true;
+               Re.value=crossPoint.index;
+               return Re;
             }
          }
       }//end check if the trouble segments are really intersect the plane
       
-      return _intersect;
+      return Re;
    }
    
    boolean segmentIntersectTriangle(Plane plane, int p1, List<Res> res){
@@ -506,6 +528,10 @@ public class SlipknotFind {
       }
    }
 
+    private void PDBfile_with_knotted_coordinates() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
 
 class Res{
@@ -515,6 +541,10 @@ class Res{
    int index;
 }
 
+class Return_simplify{
+    boolean bool;
+    int value;
+}
 class Triangle{
    int res1;
    double distance;
