@@ -44,7 +44,7 @@ public class SlipknotFind {
    
    static final double TOLERANCE=0.0003;
    int count = 0;
-   int first_atom = 0 , i = 0;
+   int first_atom = 0 , i = 0, last_atom = 0;
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
@@ -72,6 +72,7 @@ public class SlipknotFind {
                    if(s[4].equals("A")){
                        if(i == 0) { i = Integer.parseInt(s[5]); }
                        if(first_atom == 0) { first_atom = Integer.parseInt(s[5]); }
+                       last_atom = Integer.parseInt(s[5]);
                     Res r=new Res();
                     r.index=Integer.parseInt(s[5]);
                     r.x=Double.parseDouble(s[6]);
@@ -88,6 +89,7 @@ public class SlipknotFind {
       }
       System.out.println("residual.size=" + res.size());
       System.out.println("first atom :" + first_atom);
+      System.out.println("last atom :" + last_atom);
 //      System.out.println("*****"+res.size()+" CA information**********");
 //      for(int i=0;i<res.size();i++){
 //         System.out.println(res.get(i).index+":\t"+res.get(i).x+"\t"+res.get(i).y+"\t"+res.get(i).z);
@@ -229,11 +231,12 @@ public class SlipknotFind {
       int i = first_atom;
       int j = 0;
       ArrayList coordinates = new ArrayList();
+      ArrayList uniq_coordinates = new ArrayList();
       Return_simplify Re=new Return_simplify();
       while(res.size()>2){
          if(numInTri>=tri.size()){
             //cannot simplify any more
-            //PDBfile_with_knotted_coordinates();
+            create_PDB(coordinates);
             return;
          }
 
@@ -245,9 +248,11 @@ public class SlipknotFind {
             numInTri = 0;
          } else {
             numInTri++;
-            coordinates.add(i);
             //System.out.println(Arrays.toString(coordinates.toArray()));
-            System.out.println("Unsimplified Atoms: " + Re.value);
+            //System.out.println("Unsimplified Atoms: " + Re.value);
+            coordinates.add(Re.value);
+            java.util.Collections.sort(coordinates);
+            System.out.println(coordinates);
          } i++;
       }
    }
@@ -492,8 +497,8 @@ public class SlipknotFind {
    }
    
    void dblCheck(List<Res> res){
-//      System.out.println("******************************");
-//      System.out.println("now double checking");
+     System.out.println("******************************");
+     System.out.println("now double checking");
       _byArea=true;
       initTriangle(res);
       simplify(res);       
@@ -516,20 +521,47 @@ public class SlipknotFind {
              if(s[0].equals("ATOM")){
                 int residue = Integer.parseInt(s[5]);
                 if(residue >= k3 && residue <= k1){
-                    System.out.print(residue+"\n");
                     writer.println(temp);
                 }
             }
         }
         writer.close();
         System.out.println("Done Creating file at :" + PATH+PDB);
-        System.exit(0);
+        //System.exit(0);
       }catch(IOException e){
       }
    }
 
-    private void PDBfile_with_knotted_coordinates() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void create_PDB(ArrayList coordinates) {
+      String fileName=PATH+PDB;
+      File file=new File(fileName);
+      BufferedReader reader=null;
+      BufferedReader tmp=null;
+      /*System.out.println("k1 value : " + k1);
+      System.out.println("k3 value : " + k3);*/
+      try{
+         String trim_filename = PATH+"knotted_"+PDB;
+         PrintWriter writer = new PrintWriter(trim_filename, "UTF-8"); 
+         reader=new BufferedReader(new FileReader(file));
+         tmp=new BufferedReader(new FileReader(file));
+         String temp,temp1;
+         while((temp=reader.readLine())!= null){
+            String[] s=temp.split("\\s+");
+             if(s[0].equals("ATOM")){
+                if(s[2].equals("CA")){
+                int residue = Integer.parseInt(s[5]);
+                    if(residue == first_atom || coordinates.contains(residue) || residue == last_atom){
+                        writer.println(temp);
+                    }
+                }
+            }
+        }
+        
+        writer.close();
+        System.out.println("Done Creating file at :" + PATH+PDB);
+        //System.exit(0);
+      }catch(IOException e){
+      }
     }
 
 }
