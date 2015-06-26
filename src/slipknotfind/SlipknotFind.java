@@ -30,8 +30,10 @@
 package slipknotfind;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -44,7 +46,7 @@ public class SlipknotFind {
    
    static final double TOLERANCE=0.0003;
    int count = 0;
-   int first_atom = 0 , i = 0, last_atom = 0;
+   int first_atom = 0 , i = 0, last_atom = 0, k3 = 0, k2 = 0, p2_atom = 0;
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
@@ -122,8 +124,6 @@ public class SlipknotFind {
       List<Res> r;  //a part of res
       boolean _knotInR=false;
       boolean _knotInRes=true;
-      int k3=0;
-      int k2=0;
       int k_2=0;
       int k_3=0;
       while(i<res.size()-2){
@@ -203,17 +203,18 @@ public class SlipknotFind {
          }
 
          if(_knotInR == true && _knotInRes == false){
-            System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1+"\nNow, Lets check again from if there are multiple slipknots\n");
+            System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1+"\nNow, Lets check if there are multiple slipknots\n");
             System.out.println(k_3+" , "+k_2+" , "+k1);
             //writeToFile(k_3,k_2,k1);
             i = k1+1;
             if( i <= res.size()-2){
                 count += 1;
-                //checkagain();
+                checkagain();
             }
          }
          else{
             System.out.println("this chain only has a knot between "+ k3+ " and "+k2);
+            appendk3k2(k3,k2);
             //writeToFile(k3,0,k2);
          }
       }
@@ -231,7 +232,6 @@ public class SlipknotFind {
       int i = first_atom;
       int j = 0;
       ArrayList coordinates = new ArrayList();
-      ArrayList uniq_coordinates = new ArrayList();
       Return_simplify Re=new Return_simplify();
       while(res.size()>2){
          if(numInTri>=tri.size()){
@@ -248,11 +248,10 @@ public class SlipknotFind {
             numInTri = 0;
          } else {
             numInTri++;
-            //System.out.println(Arrays.toString(coordinates.toArray()));
-            //System.out.println("Unsimplified Atoms: " + Re.value);
             coordinates.add(Re.value);
+            //System.out.println(Re.value);
             java.util.Collections.sort(coordinates);
-            System.out.println(coordinates);
+            //System.out.println(coordinates);
          } i++;
       }
    }
@@ -323,6 +322,7 @@ public class SlipknotFind {
             crossPoint.y=res.get(p1).y +(mu * (res.get(p2).y - res.get(p1).y));
             crossPoint.z=res.get(p1).z +(mu * (res.get(p2).z - res.get(p1).z));
             crossPoint.index = res.get(p1).index;
+            p2_atom = res.get(p2).index;
             //check if the cross point is inside the triangle
             if(crossPointInsideTriangle(plane,crossPoint,res)){
                //System.out.println("cross point: \t"+crossPoint.x+"\t"+crossPoint.y+"\t"+crossPoint.z);
@@ -497,8 +497,8 @@ public class SlipknotFind {
    }
    
    void dblCheck(List<Res> res){
-     System.out.println("******************************");
-     System.out.println("now double checking");
+     /*System.out.println("******************************");
+     System.out.println("now double checking");*/
       _byArea=true;
       initTriangle(res);
       simplify(res);       
@@ -550,7 +550,7 @@ public class SlipknotFind {
              if(s[0].equals("ATOM")){
                 if(s[2].equals("CA")){
                 int residue = Integer.parseInt(s[5]);
-                    if(residue == first_atom || coordinates.contains(residue) || residue == last_atom){
+                    if(residue == first_atom || coordinates.contains(residue) || residue == last_atom || residue == p2_atom){
                         writer.println(temp);
                     }
                 }
@@ -558,10 +558,42 @@ public class SlipknotFind {
         }
         
         writer.close();
-        System.out.println("Done Creating file at :" + PATH+PDB);
+        //System.out.println("Done Creating file at :" + PATH+PDB);
         //System.exit(0);
       }catch(IOException e){
       }
+    }
+
+    private void appendk3k2(int k3, int k2) {
+      String fileName=PATH+PDB;
+      File file=new File(fileName);
+      BufferedReader reader=null;
+      BufferedReader tmp=null;
+      /*System.out.println("k1 value : " + k1);
+      System.out.println("k3 value : " + k3);*/
+      try{
+         reader=new BufferedReader(new FileReader(file));
+         tmp=new BufferedReader(new FileReader(file));
+         String temp,temp1;
+         while((temp=reader.readLine())!= null){
+            String[] s=temp.split("\\s+");
+             if(s[0].equals("ATOM")){
+                if(s[2].equals("CA")){
+                int residue = Integer.parseInt(s[5]);
+                    if(residue == k3 || residue == k2){
+                        try(PrintWriter write = new PrintWriter(new BufferedWriter(new FileWriter(PATH+"knotted_"+PDB, true)))) {
+                            write.println(temp);
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("Done Creating file at :" + PATH+PDB);
+        //System.exit(0);
+                
+            }catch (IOException e) {
+                //exception handling left as an exercise for the reader
+            }
     }
 
 }
