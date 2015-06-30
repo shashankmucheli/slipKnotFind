@@ -45,13 +45,13 @@ public class SlipknotFind {
    
    
    static final double TOLERANCE=0.0003;
-   int count = 0;
-   int first_atom = 0 , i = 0, last_atom = 0, k3 = 0, k2 = 0, p2_atom = 0;
+   int first_atom = 0, count = 0, i = 0, last_atom = 0, k3 = 0, k2 = 0, p2_atom = 0;
+    String chain = "X";
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
    static final String PATH="";     //the path of your pdb file.     e.g. PATH="PDB/";
-   static final String PDB="1Z97.pdb";
+   static final String PDB="K_1JS1.pdb";
    
    
    public static void main(String[] args) {
@@ -71,7 +71,7 @@ public class SlipknotFind {
             String[] s=temp.split("\\s+");
             if(s[0].equals("ATOM")){
                if(s[2].equals("CA")){
-                   if(s[4].equals("A")){
+                   if(s[4].equals(chain)){
                        if(i == 0) { i = Integer.parseInt(s[5]); }
                        if(first_atom == 0) { first_atom = Integer.parseInt(s[5]); }
                        last_atom = Integer.parseInt(s[5]);
@@ -214,7 +214,7 @@ public class SlipknotFind {
          }
          else{
             System.out.println("this chain only has a knot between "+ k3+ " and "+k2);
-            appendk3k2(k3,k2);
+            //appendk3k2(k3,k2);
             //writeToFile(k3,0,k2);
          }
       }
@@ -232,6 +232,7 @@ public class SlipknotFind {
       int i = first_atom;
       int j = 0;
       ArrayList coordinates = new ArrayList();
+      ArrayList removed_atoms = new ArrayList();
       Return_simplify Re=new Return_simplify();
       while(res.size()>2){
          if(numInTri>=tri.size()){
@@ -244,7 +245,7 @@ public class SlipknotFind {
          Plane plane = new Plane(res,res1);
          Re = findIntersect(plane,res);
          if (!Re.bool) {
-            deleteResidual(res, res1 + 1);
+            deleteResidual(res, res1 + 1, removed_atoms);
             numInTri = 0;
          } else {
             numInTri++;
@@ -254,6 +255,9 @@ public class SlipknotFind {
             //System.out.println(coordinates);
          } i++;
       }
+     java.util.Collections.sort(removed_atoms);
+     /*System.out.println("Deleted Atoms: " + removed_atoms);
+     System.out.println("Remaining Atoms: " + coordinates);*/
    }
    
    Return_simplify findIntersect(Plane plane, List<Res> res){
@@ -383,7 +387,7 @@ public class SlipknotFind {
         
    }
    
-   void deleteResidual(List<Res> res, int res2){
+   void deleteResidual(List<Res> res, int res2, ArrayList removed_atoms){
       //delete 3 triangles
       int del=0;
       int add=0;
@@ -414,6 +418,8 @@ public class SlipknotFind {
       
       //remove the residual from res chain
       //System.out.println("Deleting...  "+res.get(res2).index);
+      
+      removed_atoms.add(res2);
       res.remove(res2);
       
       if(res2>1){
@@ -549,13 +555,15 @@ public class SlipknotFind {
             String[] s=temp.split("\\s+");
              if(s[0].equals("ATOM")){
                 if(s[2].equals("CA")){
-                int residue = Integer.parseInt(s[5]);
-                    if(residue == first_atom || coordinates.contains(residue) || residue == last_atom || residue == p2_atom){
-                        writer.println(temp);
+                    if(s[4].equals(chain)){
+                        int residue = Integer.parseInt(s[5]);
+                            if(residue == first_atom || coordinates.contains(residue) || residue == last_atom || residue == p2_atom){
+                                writer.println(temp);
+                            }
+                        }
                     }
                 }
             }
-        }
         
         writer.close();
         //System.out.println("Done Creating file at :" + PATH+PDB);
