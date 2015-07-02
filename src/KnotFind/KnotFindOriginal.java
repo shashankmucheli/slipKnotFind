@@ -42,7 +42,7 @@ public class KnotFindOriginal {
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
-   static final String PATH="";     //the path of your pdb file.     e.g. PATH="PDB/";
+   static final String PATH="PDB/";     //the path of your pdb file.     e.g. PATH="PDB/";
    static final String PDB="1JS1.pdb";
    int first_atom,last_atom = 0;
    
