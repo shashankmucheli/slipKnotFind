@@ -42,8 +42,8 @@ public class KnotFindOriginal {
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
-   static final String PATH="PDB/";     //the path of your pdb file.     e.g. PATH="PDB/";
-   static final String PDB="1JS1.pdb";
+   static final String PATH="PDB/", PDB_PATH = "Knotfind/";     //the path of your pdb file.     e.g. PATH="PDB/";
+   static final String PDB="1ALK_A.pdb";
    int first_atom,last_atom = 0;
    
    
@@ -64,7 +64,7 @@ public class KnotFindOriginal {
             String[] s=temp.split("\\s+");
             if(s[0].equals("ATOM"))
                if(s[2].equals("CA")){
-                   if(s[4].equals("X")){
+                   if(s[4].equals("A")){
                        if(first_atom == 0) { first_atom = Integer.parseInt(s[5]); }
                   Res r=new Res();
                   r.index=Integer.parseInt(s[5]);
@@ -148,12 +148,20 @@ public class KnotFindOriginal {
          if(!knotFind(r)){
             k3=i-1;
             System.out.println("find smallest knot between "+k3 +" to "+ k2);
+            ArrayList list = new ArrayList();
+            for(Res s : r){
+                list.add(s.index);
+            }
+            System.out.println(list);
+            createpdb(list);
             break;
          }
+         
       }
       
+      boolean temp = false;
       
-      if(_knotInR){  
+      if(_knotInR && temp){  
          System.out.println("***********************************************");
          System.out.println("now check if the knot could be untied eventually");
          int k1=-1;
@@ -167,11 +175,17 @@ public class KnotFindOriginal {
             if(!knotFind(r)){
                _knotInRes=false;
                k1=i;
+               //ArrayList list = new ArrayList();
+                //for(Res s : res){
+                  //  list.add(s.index);
+                //}
+                //System.out.println(list);
+                //createpdb(list);
                break;
             }
          }
          
-         if(_knotInRes){      
+         if(_knotInRes && temp){      
             for(int i = k3 - 1; i >= 0; i--) {
                System.out.println("checking residues from " + i + " to " + k2);
                r = new ArrayList();
@@ -209,8 +223,8 @@ public class KnotFindOriginal {
             for(Res s : res){
                 list.add(s.index);
             }
-            System.out.println(list);
-            createpdb(list);
+            //System.out.println(list);
+            //createpdb(list);
             return;
          }
 
@@ -472,7 +486,7 @@ public class KnotFindOriginal {
       /*System.out.println("k1 value : " + k1);
       System.out.println("k3 value : " + k3);*/
       try{
-         String trim_filename = PATH+"knotfind_"+PDB;
+         String trim_filename = PDB_PATH+"knotfind_"+PDB;
          PrintWriter writer = new PrintWriter(trim_filename, "UTF-8"); 
          reader=new BufferedReader(new FileReader(file));
          tmp=new BufferedReader(new FileReader(file));
@@ -481,7 +495,7 @@ public class KnotFindOriginal {
             String[] s=temp.split("\\s+");
              if(s[0].equals("ATOM")){
                 if(s[2].equals("CA")){
-                    if(s[4].equals("X")){
+                    if(s[4].equals("A")){
                         int residue = Integer.parseInt(s[5]);
                             if(residue == first_atom || list.contains(residue) || residue == last_atom){
                                 writer.println(temp);
