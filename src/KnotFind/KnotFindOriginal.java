@@ -42,12 +42,18 @@ public class KnotFindOriginal {
    static List<Triangle> tri=new ArrayList();
    static List<Res> res=new ArrayList();
    static boolean _byArea=false;
-   static final String PATH="PDB/", PDB_PATH = "Knotfind/";     //the path of your pdb file.     e.g. PATH="PDB/";
-   static final String PDB="1ALK_A.pdb";
+   static String Knotfind_PDB = "Knotfind_PDB/", Slipknotfind_PDB = "Slipknotfind_PDB/";
+   //static String PATH="PDB/";     //the path of your pdb file.     e.g. PATH="PDB/";
+   //static String PDB="1ALK_A.pdb", chain="A";
+   static String PATH,PDB,chain;
    int first_atom,last_atom = 0;
    
    
    public static void main(String[] args) {
+      PATH = args[0];
+      PDB = args[1]+".pdb";
+      chain = args[2];
+      System.out.println(PATH+" "+PDB+" "+chain);
       KnotFindOriginal sf=new KnotFindOriginal(); 
       sf.initResidual(PDB);
       sf.slipknotFind(res);
@@ -64,7 +70,7 @@ public class KnotFindOriginal {
             String[] s=temp.split("\\s+");
             if(s[0].equals("ATOM"))
                if(s[2].equals("CA")){
-                   if(s[4].equals("A")){
+                   if(s[4].equals(chain)){
                        if(first_atom == 0) { first_atom = Integer.parseInt(s[5]); }
                   Res r=new Res();
                   r.index=Integer.parseInt(s[5]);
@@ -148,12 +154,12 @@ public class KnotFindOriginal {
          if(!knotFind(r)){
             k3=i-1;
             System.out.println("find smallest knot between "+k3 +" to "+ k2);
-            ArrayList list = new ArrayList();
+            ArrayList list = new ArrayList<Integer>();
             for(Res s : r){
                 list.add(s.index);
             }
-            System.out.println(list);
-            createpdb(list);
+            //System.out.println(list);
+            //createpdb(list);
             break;
          }
          
@@ -161,7 +167,7 @@ public class KnotFindOriginal {
       
       boolean temp = false;
       
-      if(_knotInR && temp){  
+      if(_knotInR){  
          System.out.println("***********************************************");
          System.out.println("now check if the knot could be untied eventually");
          int k1=-1;
@@ -175,17 +181,19 @@ public class KnotFindOriginal {
             if(!knotFind(r)){
                _knotInRes=false;
                k1=i;
-               //ArrayList list = new ArrayList();
-                //for(Res s : res){
-                  //  list.add(s.index);
-                //}
-                //System.out.println(list);
-                //createpdb(list);
                break;
+            }
+            else{
+                ArrayList list = new ArrayList<Integer>();
+                for(Res s : r){
+                    list.add(s.index);
+                }
+                System.out.println(list);
+                pdb_slipknotfind(list);
             }
          }
          
-         if(_knotInRes && temp){      
+         if(_knotInRes ){      
             for(int i = k3 - 1; i >= 0; i--) {
                System.out.println("checking residues from " + i + " to " + k2);
                r = new ArrayList();
@@ -199,6 +207,14 @@ public class KnotFindOriginal {
                   k1 = i;
                   break;
                }
+               else{
+                    ArrayList list = new ArrayList<Integer>();
+                    for(Res s : r){
+                        list.add(s.index);
+                    }
+                    System.out.println(list);
+                    pdb_slipknotfind(list);
+                }
             }
          }
 
@@ -206,11 +222,11 @@ public class KnotFindOriginal {
             System.out.println("find a slipknot: k3="+k3+"  k2="+k2+"  k1="+ k1);
          }
          else{
-            System.out.println("this chain only has a knot between "+ k3+ " and "+k2);
+            System.out.println("this chain has a knot between "+ k3+ " and "+k2);
          }
       }
       else{
-         System.out.println("not knots, no slipknots");
+         System.out.println("no knots, no slipknots");
       }
    }
    
@@ -223,8 +239,8 @@ public class KnotFindOriginal {
             for(Res s : res){
                 list.add(s.index);
             }
-            //System.out.println(list);
-            //createpdb(list);
+            System.out.println(list);
+            pdb_knotfind(list);
             return;
          }
 
@@ -237,6 +253,12 @@ public class KnotFindOriginal {
             numInTri++;
          }
       }
+      ArrayList list = new ArrayList();
+      for(Res s : res){
+        list.add(s.index);
+      }
+      //System.out.println(list);
+      pdb_knotfind(list);
    }
    
    boolean findIntersect(Plane plane, List<Res> res){
@@ -478,15 +500,15 @@ public class KnotFindOriginal {
       _byArea=false;
    }
 
-    private void createpdb(ArrayList list) {
-        String fileName=PATH+PDB;
+    private void pdb_knotfind(ArrayList list) {
+      String fileName=PATH+PDB;
       File file=new File(fileName);
       BufferedReader reader=null;
       BufferedReader tmp=null;
       /*System.out.println("k1 value : " + k1);
       System.out.println("k3 value : " + k3);*/
       try{
-         String trim_filename = PDB_PATH+"knotfind_"+PDB;
+         String trim_filename = Knotfind_PDB+"knotfind_"+PDB;
          PrintWriter writer = new PrintWriter(trim_filename, "UTF-8"); 
          reader=new BufferedReader(new FileReader(file));
          tmp=new BufferedReader(new FileReader(file));
@@ -495,7 +517,7 @@ public class KnotFindOriginal {
             String[] s=temp.split("\\s+");
              if(s[0].equals("ATOM")){
                 if(s[2].equals("CA")){
-                    if(s[4].equals("A")){
+                    if(s[4].equals(chain)){
                         int residue = Integer.parseInt(s[5]);
                             if(residue == first_atom || list.contains(residue) || residue == last_atom){
                                 writer.println(temp);
@@ -506,6 +528,57 @@ public class KnotFindOriginal {
             }
         
         writer.close();
+        //System.out.println("Done Creating file at :" + PATH+PDB);
+        //System.exit(0);
+      }catch(IOException e){
+      }
+    }
+
+    private void pdb_slipknotfind(ArrayList<Integer> list) {
+      String fileName=PATH+PDB;
+      File file=new File(fileName);
+      BufferedReader reader=null;
+      BufferedReader tmp=null;
+      /*System.out.println("k1 value : " + k1);
+      System.out.println("k3 value : " + k3);*/
+      try{
+         String trim_filename = Slipknotfind_PDB+"slipknotfind_"+PDB;
+         String load_filename = Slipknotfind_PDB+"load_"+PDB;
+         PrintWriter writer = new PrintWriter(trim_filename, "UTF-8"); 
+         PrintWriter loadfile_writer = new PrintWriter(load_filename, "UTF-8"); 
+         reader=new BufferedReader(new FileReader(file));
+         tmp=new BufferedReader(new FileReader(file));
+         String temp;
+         while((temp=reader.readLine())!= null){
+            String[] s=temp.split("\\s+");
+            if(s[0].equals("ATOM")){
+                if(s[4].equals(chain)){
+                    int residue = Integer.parseInt(s[5]);
+                    /*int lowerbound = list.get(0);
+                    int upperbound = list.get(list.size() - 1);*/
+                    //System.out.println(lowerbound+" "+upperbound);
+                    if(residue >= list.get(0) && residue <= list.get(list.size() - 1)){
+                        if(list.contains(residue) && s[2].equals("CA")){
+                            //if(s[2].equals("CA")){
+                                    if(residue == first_atom || list.contains(residue) || residue == last_atom){
+                                        writer.println(temp);
+                                        loadfile_writer.println(temp);                                        
+                                    }
+                                }
+                            //}
+                        }
+                    else{
+                        writer.println(temp);
+                    }
+                }
+            }
+            else{
+                writer.println(temp);
+            }
+        }
+        
+        writer.close();
+        loadfile_writer.close();
         //System.out.println("Done Creating file at :" + PATH+PDB);
         //System.exit(0);
       }catch(IOException e){

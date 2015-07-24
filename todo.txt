@@ -1,0 +1,19 @@
+1. Visualize Slipknots
+	- Make sure the knot till knotfind(k1-1) is logged.
+	- Log All the atoms before and after the knot so that the entire chain is displayed in the resulting PDB file. 
+	- Remove the B factor filters from the cmd.spectrum.
+	- Check to see as many knots as possible.
+	- Show only CA'se
+	- Color only the Slipknot and everything else with grays
+	- Thicker Bonds.
+	- Label all the unsimplified residues.
+	- Visualize other examples.
+	
+2. Shell Script.
+	- Prepare an outline of how the flow should go about. 
+	- Java code with $1 argument.
+	- Find out how to load the run command in pymol without explicitly typing it.
+	
+3.
+ Email both the profs
+ Friday at 11

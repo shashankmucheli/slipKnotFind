@@ -19,3 +19,4 @@ DESCRIPTION
     return (arg1, arg2)
 
 cmd.extend( "yourFunction", yourFunction("Hello","World") );
+cmd.load("../PDB/1JS1.pdb")
